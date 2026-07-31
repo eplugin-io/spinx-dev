@@ -5,16 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <script>
     // Classic (non-module) script: runs synchronously here in <head>, before <body> is even
-    // parsed, so the correct page is picked before first paint. Deciding this later (in the
-    // deferred module script further down) let the wrong page render visibly for a moment first,
-    // causing a flash/flicker on every load — this covers both cases that used to flicker:
-    // 1. Demo hero vs. the neutral storefront preview backdrop used inside the theme editor's
-    //    live-preview iframe (?spinx_editor_preview=1).
-    // 2. Demo/marketing page vs. the full theme editor UI itself (?spinx_editor=1, or a
-    //    session restored from storage — see hasStoredSpinxEditorSession below). The editor's
-    //    own root element (id kept in sync with EDITOR_ROOT_ID in src/editor/types.ts) doesn't
-    //    exist yet at this point; it's created later once the editor bundle loads, so this only
-    //    needs to hide everything else that's already in the static HTML.
+    // parsed, so the full theme editor UI can hide the static preview page before first paint.
     function hasStoredSpinxEditorSession() {
       if (window.self !== window.top) {
         return false;
@@ -27,15 +18,13 @@
       }
     }
     var params = new URLSearchParams(location.search);
-    document.documentElement.classList.toggle('spinx-preview-mode', params.get('spinx_editor_preview') === '1');
+    document.documentElement.classList.add('spinx-preview-mode');
     document.documentElement.classList.toggle(
       'spinx-editor-pending',
       params.get('spinx_editor') === '1' || hasStoredSpinxEditorSession(),
     );
   </script>
   <style>
-    .spinx-preview-mode .demo-container { display: none !important; }
-    html:not(.spinx-preview-mode) #spinx-preview-page { display: none !important; }
     html.spinx-editor-pending body > *:not(#spinx-theme-editor) { display: none !important; }
   </style>
   <title>SpinX Wheel – Gamified Popups to Boost Sales & Engagement</title>
@@ -56,12 +45,12 @@
   <meta property="og:url" content="https://spinx-wheel.eplugin.io">
   <meta property="og:site_name" content="SpinX Wheel">
   <meta property="og:locale" content="en_US">
-  <meta property="og:image" content="https://cdn.jsdelivr.net/gh/eplugin-io/spinx-dev@2.0.1-build.23/assets/images/logo/spinx-wheel-logo-full.png">
+  <meta property="og:image" content="https://cdn.jsdelivr.net/gh/eplugin-io/spinx-dev@2.0.1-build.25/assets/images/logo/spinx-wheel-logo-full.png">
   <meta property="og:image:alt" content="SpinX Wheel">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="SpinX Wheel – Gamified Popups to Boost Sales & Engagement">
   <meta name="twitter:description" content="Launch seasonal campaigns fast, capture leads, and lift conversions with SpinX’s spin‑to‑win widgets.">
-  <meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/eplugin-io/spinx-dev@2.0.1-build.23/assets/images/logo/spinx-wheel-logo-full.png">
+  <meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/eplugin-io/spinx-dev@2.0.1-build.25/assets/images/logo/spinx-wheel-logo-full.png">
 
   <!-- Structured Data -->
   <script type="application/ld+json">
@@ -104,24 +93,22 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href='https://fonts.googleapis.com/css?family=Nunito' rel='stylesheet'>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/eplugin-io/spinx-dev@2.0.1-build.23/assets/styles/main.css">
-  <script type="module" src="https://cdn.jsdelivr.net/gh/eplugin-io/spinx-dev@2.0.1-build.23/spinx.min.js"></script>
-  <script type="module" src="https://cdn.jsdelivr.net/gh/eplugin-io/spinx-dev@2.0.1-build.23/InitDemoData.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/eplugin-io/spinx-dev@2.0.1-build.25/assets/styles/main.css">
+  <script type="module" src="https://cdn.jsdelivr.net/gh/eplugin-io/spinx-dev@2.0.1-build.25/spinx.min.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/gh/eplugin-io/spinx-dev@2.0.1-build.25/InitDemoData.js"></script>
   <script type="module">
     // spinx-editor-pending was already computed synchronously up in <head> (URL param or a
     // restored session — see EDITOR_SESSION_STORAGE_KEY in src/editor/types.ts) to hide the demo
     // page before first paint; reuse that same decision here instead of re-deriving it.
     if (document.documentElement.classList.contains('spinx-editor-pending')) {
-      import('https://cdn.jsdelivr.net/gh/eplugin-io/spinx-dev@2.0.1-build.23/spinx.editor.min.js');
+      import('https://cdn.jsdelivr.net/gh/eplugin-io/spinx-dev@2.0.1-build.25/spinx.editor.min.js');
     }
 
-    // Editor live-preview target (the plain iframe embedded inside the theme editor, distinct from
-    // the full editor UI above) — swaps the public marketing hero for a neutral storefront-style
-    // backdrop instead, so a merchant customizing their own campaign isn't previewing it on top of
-    // SpinX's own sales copy. Real product data can be filled into PREVIEW_PRODUCTS below; until
-    // then it renders a few skeleton cards so the grid still reads as "a page", not an empty gap.
+    // Neutral storefront-style preview backdrop. Real product data can be filled into
+    // PREVIEW_PRODUCTS below; until then it renders skeleton cards so the page still feels like a
+    // store preview, not an empty gap.
     var PREVIEW_PRODUCTS = [
-      // { name: 'Product name', price: '$29.00', image: 'https://cdn.jsdelivr.net/gh/eplugin-io/spinx-dev@2.0.1-build.23/assets/images/preview/product-1.jpg' },
+      // { name: 'Product name', price: '$29.00', image: 'https://cdn.jsdelivr.net/gh/eplugin-io/spinx-dev@2.0.1-build.25/assets/images/preview/product-1.jpg' },
     ];
 
     function renderPreviewProducts() {
@@ -152,33 +139,13 @@
         .join('');
     }
 
-    // Visibility itself is already handled by the .spinx-preview-mode CSS set synchronously up in
-    // <head> — this just fills in the product grid once the DOM exists.
-    if (new URLSearchParams(window.location.search).get('spinx_editor_preview') === '1') {
-      renderPreviewProducts();
-    }
+    renderPreviewProducts();
   </script>
 </head>
 <body class="demo-page live-demo">
-  <div class="demo-container">
-    <p><img class="demo-logo" src="https://cdn.jsdelivr.net/gh/eplugin-io/spinx-dev@2.0.1-build.23/assets/images/logo/spinx-wheel-logo-full.png" alt="SpinX Wheel"></p>
-    <p class="demo-title">Spin to capture leads and boost conversions</p>
-    <p class="demo-subtitle">Drive higher conversions with seasonal event themes all year — launch campaigns fast and keep customers engaged.</p>
-    <div class="demo-actions">
-      <a class="demo-button primary" href="#try" onclick="(function() { window.SpinX?.components?.spinPopup?.open?.() })(); return false;">Try the demo</a>
-      <a class="demo-button ghost" href="https://apps.shopify.com/spinx" target="_blank" rel="noopener">Get the app</a>
-    </div>
-    <div class="demo-steps" id="try">
-      <div class="demo-step">1. Enter your details</div>
-      <div class="demo-step">2. Spin the wheel</div>
-      <div class="demo-step">3. Get an instant reward</div>
-    </div>
-    <p></p>
-  </div>
-
   <div class="preview-page" id="spinx-preview-page">
     <header class="preview-header">
-      <img class="preview-header-logo" src="https://cdn.jsdelivr.net/gh/eplugin-io/spinx-dev@2.0.1-build.23/assets/images/logo/spinx-wheel-logo-full-horizontal.png" alt="SpinX Wheel">
+      <img class="preview-header-logo" src="https://cdn.jsdelivr.net/gh/eplugin-io/spinx-dev@2.0.1-build.25/assets/images/logo/spinx-wheel-logo-full-horizontal.png" alt="SpinX Wheel">
       <nav class="preview-header-nav">
         <a href="https://apps.shopify.com/spinx" target="_blank" rel="noopener">Get the app</a>
       </nav>
