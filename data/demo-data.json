@@ -112,9 +112,9 @@
       }
     },
     "excludeUrls": [],
-    "languages": {
-      "enabled": false,
-      "defaultLanguage": "en"
+    "localization": {
+      "language": "en",
+      "autoDetect": false
     },
     "translations": {},
     "emailContent": {
