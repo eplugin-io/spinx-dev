@@ -42,11 +42,6 @@
         "moneyFormat": "${{amount}} USD"
       },
       "localization": {
-        "locales": [
-          "vi",
-          "fr"
-        ],
-        "countryCode": null,
         "defaultLocale": "en"
       }
     }
@@ -114,7 +109,7 @@
     "excludeUrls": [],
     "localization": {
       "language": "en",
-      "autoDetect": false
+      "multiLang": false
     },
     "translations": {},
     "emailContent": {
